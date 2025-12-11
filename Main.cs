@@ -3,6 +3,7 @@ using BTD_Mod_Helper.Api.ModOptions;
 using FillMapWithMonkeys;
 using Il2CppAssets.Scripts;
 using Il2CppAssets.Scripts.Models.Map;
+using Il2CppAssets.Scripts.Unity.Bridge;
 using Il2CppAssets.Scripts.Unity.UI_New.InGame;
 using Il2CppAssets.Scripts.Unity.UI_New.InGame.RightMenu;
 using Il2CppInterop.Runtime;
@@ -44,15 +45,24 @@ public class Main : BloonsTD6Mod
 
         var towerModel = ShopMenu.instance.selectedButton.TowerModel.Duplicate();
         towerModel.skinName = "";
+        int num = 0;
 
         for (int x = 0; x < Constants.worldWidth; x++)
         {
             for (int y = 0; y < Constants.worldHeight; y++)
             {
+                const int maxTowers = 1500;
+                if (num >= maxTowers)
+                {
+                    MelonLogger.Warning($"Placed {maxTowers} towers, pausing to avoid hanging.");
+                    return;
+                }
+
                 var position = new Vector3(Constants.worldXMin + x, Constants.worldZMin + y);
 
                 var areaAtPoint = InGame.instance.GetMap().GetAreaAtPoint(position.ToVector2());
-                if (!InGame.instance.GetUnityToSimulation().Simulation.Map.CanPlace(position.ToVector2(), towerModel))
+                if (!InGame.instance.GetUnityToSimulation().Simulation.Map.CanPlace(position.ToVector2(), towerModel) || InGame.instance.GetTowerManager().GetTowersInRange(position.ToVector2(),
+                        towerModel.radius).Any())
                 {
                     continue;
                 }
@@ -61,7 +71,10 @@ public class Main : BloonsTD6Mod
                     InGame.instance.bridge.MyPlayerNumber,
                     areaAtPoint?.GetAreaID() ?? ObjectId.FromData(1),
                     ObjectId.FromData(4294967295), null, false, false, 0, false);
+                num++;
             }
         }
+
+        MelonLogger.Msg($"Successfully placed {num} towers.");
     }
 }

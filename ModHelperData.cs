@@ -7,5 +7,5 @@ public static class ModHelperData
     internal const string Version = "1.0.0";
     internal const string RepoOwner = "GrahamKracker";
     internal const string RepoName = "FillMapWithMonkeys";
-    internal const string WorksOnVersion = "38.3";
+    internal const string WorksOnVersion = "50.1";
 }
