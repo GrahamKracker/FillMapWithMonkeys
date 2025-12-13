@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections;
 using BTD_Mod_Helper.Api.ModOptions;
 using FillMapWithMonkeys;
 using Il2CppAssets.Scripts;
@@ -34,17 +34,18 @@ public class Main : BloonsTD6Mod
     {
         if (FillMapWithMonkeys.JustPressed())
         {
-            FillMap();
+            MelonCoroutines.Start(FillMap());
         }
     }
 
 
-    private static void FillMap()
+    private static IEnumerator FillMap()
     {
-        Logger.Msg("tower placed: " + ShopMenu.instance.selectedButton.TowerModel.name);
+        Logger.Msg("Placing tower: " + ShopMenu.instance.selectedButton.TowerModel.name);
 
         var towerModel = ShopMenu.instance.selectedButton.TowerModel.Duplicate();
         towerModel.skinName = "";
+
         int num = 0;
 
         for (int x = 0; x < Constants.worldWidth; x++)
@@ -55,7 +56,7 @@ public class Main : BloonsTD6Mod
                 if (num >= maxTowers)
                 {
                     MelonLogger.Warning($"Placed {maxTowers} towers, pausing to avoid hanging.");
-                    return;
+                    yield break;
                 }
 
                 var position = new Vector3(Constants.worldXMin + x, Constants.worldZMin + y);
@@ -67,14 +68,21 @@ public class Main : BloonsTD6Mod
                     continue;
                 }
 
+
                 InGame.instance.GetTowerManager().CreateTower(towerModel, position,
                     InGame.instance.bridge.MyPlayerNumber,
                     areaAtPoint?.GetAreaID() ?? ObjectId.FromData(1),
                     ObjectId.FromData(4294967295), null, false, false, 0, false);
                 num++;
+
+                if (num % 30 == 0)
+                {
+                    MelonLogger.Msg($"Placed {num} towers so far...");
+                    yield return null;
+                }
             }
         }
 
-        MelonLogger.Msg($"Successfully placed {num} towers.");
+        MelonLogger.Msg($"Successfully placed a total of {num} towers.");
     }
 }

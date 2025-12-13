@@ -1,1 +1,1 @@
-Update for v52
+Reduce stuttering while placing towers
